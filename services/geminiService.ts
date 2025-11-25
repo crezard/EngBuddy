@@ -1,8 +1,40 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 
+// Helper to determine API Key based on user preference: VITE_VAIT_API_KEY > API_KEY
+// Supports both import.meta.env (Vite) and process.env (Node/Webpack)
+const getApiKey = (): string => {
+  let key = "";
+
+  // 1. Try import.meta.env (Vite standard)
+  try {
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+      // @ts-ignore
+      if (import.meta.env.VITE_VAIT_API_KEY) key = import.meta.env.VITE_VAIT_API_KEY;
+      // @ts-ignore
+      else if (import.meta.env.API_KEY) key = import.meta.env.API_KEY;
+    }
+  } catch (e) {
+    // Ignore errors accessing import.meta
+  }
+
+  if (key) return key;
+
+  // 2. Try process.env (Node/standard)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      if (process.env.VITE_VAIT_API_KEY) key = process.env.VITE_VAIT_API_KEY;
+      else if (process.env.API_KEY) key = process.env.API_KEY;
+    }
+  } catch (e) {
+    // Ignore errors accessing process.env
+  }
+
+  return key;
+};
+
 // Initialize Gemini Client
-// The API key is injected via environment variable process.env.API_KEY
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
 const SYSTEM_INSTRUCTION = `
 당신은 한국의 중학교 학생들을 돕는 친절하고 유능한 영어 수행평가 튜터 'EngBuddy'입니다.
